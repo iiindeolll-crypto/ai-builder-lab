@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marketplace Review Assistant</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- Заголовок -->
+    <h1>Marketplace Review Assistant</h1>
+    <p class="subtitle">AI-помощник для ответов на отзывы</p>
+
+    <!-- Форма -->
+    <div class="card">
+      <h2>Новый отзыв</h2>
+
+      <label for="reviewText">Текст отзыва или вопроса</label>
+      <textarea
+        id="reviewText"
+        placeholder="Вставьте отзыв покупателя..."
+        rows="4"
+      ></textarea>
+
+      <label for="reviewType">Тип</label>
+      <select id="reviewType">
+        <option value="review">Отзыв</option>
+        <option value="question">Вопрос</option>
+        <option value="complaint">Жалоба</option>
+      </select>
+
+      <button id="submitBtn">Добавить и сгенерировать ответ</button>
+    </div>
+
+    <!-- Список отзывов -->
+    <div class="card">
+      <h2>Список отзывов</h2>
+      <div id="reviewList">
+        <p class="empty-state">Отзывов пока нет. Добавьте первый.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
