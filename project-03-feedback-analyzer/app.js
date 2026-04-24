@@ -1,63 +1,57 @@
-const API_KEY = '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';
-const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-
 const submitBtn = document.getElementById('submitBtn');
 const reviewText = document.getElementById('reviewText');
 const reviewType = document.getElementById('reviewType');
 const reviewList = document.getElementById('reviewList');
 
-let reviews = [];
+const GEMINI_API_KEY = "AIzaSyCg1G1ieKIvvfxOCS9PP-PbGCSobGiO5aU";
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`;
+
+let isLoading = false;
+let reviews = JSON.parse(localStorage.getItem('reviews') || '[]');
+
+renderReviews();
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 async function generateAIResponse(text, type) {
-  const typeContext = {
-    review: 'покупатель оставил отзыв',
-    question: 'покупатель задал вопрос',
-    complaint: 'покупатель написал жалобу',
+  const typeDescriptions = {
+    review: 'отзыв',
+    question: 'вопрос',
+    complaint: 'жалоба'
   };
 
-  const systemPrompt = `Ты вежливый менеджер интернет-магазина на маркетплейсе.
-Твоя задача — отвечать на сообщения покупателей коротко, профессионально и по делу.
-Ответ должен быть на русском языке.
-Максимум 3 предложения.`;
+  const prompt = `Ты помощник продавца на маркетплейсе Ozon. 
+Пиши вежливые, краткие и профессиональные ответы на отзывы покупателей.
+Отвечай по-русски. Максимум 3 предложения. Без лишних слов.
 
-  const userMessage = `Ситуация: ${typeContext[type]}.
-Сообщение покупателя: "${text}"
-Напиши ответ от имени продавца.`;
+Тип сообщения: ${typeDescriptions[type]}
+Текст покупателя: ${text}
 
-  try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`,
-        'HTTP-Referer': 'http://127.0.0.1:5500',
-        'X-Title': 'Marketplace Review Assistant',
-      },
-      body: JSON.stringify({
-        model: 'inclusionai/ling-2.6-1t:free',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userMessage },
-        ],
-      }),
-    });
+Напиши ответ продавца.`;
 
-    const data = await response.json();
+  const response = await fetch(GEMINI_API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }]
+    })
+  });
 
-    if (!response.ok) {
-      console.error('OpenRouter error:', data);
-      return `Ошибка API: ${data.error?.message || response.status}`;
-    }
-
-    return data.choices?.[0]?.message?.content || 'Пустой ответ от AI';
-
-  } catch (error) {
-    console.error('Ошибка AI:', error);
-    return 'Не удалось получить ответ. Попробуйте снова.';
+  if (!response.ok) {
+    const status = response.status;
+    if (status === 429) throw new Error('429');
+    throw new Error(`API error: ${status}`);
   }
+
+  const data = await response.json();
+  return data.candidates[0].content.parts[0].text.trim();
 }
 
 submitBtn.addEventListener('click', async () => {
+  if (isLoading) return;
+
   const text = reviewText.value.trim();
   const type = reviewType.value;
 
@@ -66,10 +60,22 @@ submitBtn.addEventListener('click', async () => {
     return;
   }
 
+  isLoading = true;
   submitBtn.disabled = true;
-  submitBtn.textContent = 'Генерируем ответ...';
+  submitBtn.textContent = '⏳ Генерирую ответ...';
 
-  const aiResponse = await generateAIResponse(text, type);
+  let aiResponse;
+
+  try {
+    aiResponse = await generateAIResponse(text, type);
+  } catch (error) {
+    if (error.message === '429') {
+      aiResponse = '⏳ Превышен лимит запросов. Подождите 1 минуту и попробуйте снова.';
+    } else {
+      aiResponse = '❌ Ошибка. Проверьте консоль браузера (F12 → Console).';
+      console.error(error);
+    }
+  }
 
   const review = {
     id: Date.now(),
@@ -80,11 +86,13 @@ submitBtn.addEventListener('click', async () => {
   };
 
   reviews.unshift(review);
+  localStorage.setItem('reviews', JSON.stringify(reviews));
   renderReviews();
 
+  reviewText.value = '';
+  isLoading = false;
   submitBtn.disabled = false;
   submitBtn.textContent = 'Добавить и сгенерировать ответ';
-  reviewText.value = '';
 });
 
 function renderReviews() {
@@ -100,7 +108,7 @@ function renderReviews() {
         <span class="review-date">${review.date}</span>
       </div>
       <p class="review-text">${review.text}</p>
-      <div class="ai-label">AI-ответ</div>
+      <div class="ai-label">AI-ответ (Gemini)</div>
       <div class="ai-response">${review.aiResponse}</div>
     </div>
   `).join('');
