@@ -1,16 +1,13 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Marketplace Review Assistant</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
   <div class="container">
-
-    <!-- Заголовок -->
     <h1>Marketplace Review Assistant</h1>
     <p class="subtitle">AI-помощник для ответов на отзывы</p>
 
@@ -18,14 +15,20 @@
     <div class="card">
       <h2>Новый отзыв</h2>
 
-      <label for="reviewText">Текст отзыва или вопроса</label>
-      <textarea
-        id="reviewText"
-        placeholder="Вставьте отзыв покупателя..."
-        rows="4"
-      ></textarea>
+      <label>Текст отзыва или вопроса</label>
+      <textarea id="reviewText" placeholder="Вставьте отзыв покупателя..."></textarea>
 
-      <label for="reviewType">Тип</label>
+      <!-- Рейтинг -->
+      <label>Оценка покупателя</label>
+      <div class="stars" id="starRating">
+        <span class="star" data-value="1">★</span>
+        <span class="star" data-value="2">★</span>
+        <span class="star" data-value="3">★</span>
+        <span class="star" data-value="4">★</span>
+        <span class="star" data-value="5">★</span>
+      </div>
+
+      <label>Тип</label>
       <select id="reviewType">
         <option value="review">Отзыв</option>
         <option value="question">Вопрос</option>
@@ -35,14 +38,20 @@
       <button id="submitBtn">Добавить и сгенерировать ответ</button>
     </div>
 
-    <!-- Список отзывов -->
-    <div class="card">
-      <h2>Список отзывов</h2>
-      <div id="reviewList">
-        <p class="empty-state">Отзывов пока нет. Добавьте первый.</p>
-      </div>
+    <!-- Фильтр -->
+    <div class="filter-bar">
+      <span>Фильтр:</span>
+      <button class="filter-btn active" data-filter="all">Все</button>
+      <button class="filter-btn" data-filter="review">Отзывы</button>
+      <button class="filter-btn" data-filter="question">Вопросы</button>
+      <button class="filter-btn" data-filter="complaint">Жалобы</button>
     </div>
 
+    <!-- Список -->
+    <div class="card">
+      <h2>Список отзывов</h2>
+      <div id="reviewList"></div>
+    </div>
   </div>
 
   <script src="app.js"></script>
