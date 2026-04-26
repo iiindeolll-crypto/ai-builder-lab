@@ -1,5 +1,0 @@
-Installed Git
-Created repository
-Connected local project to GitHub
-Created README
-Made small commits
